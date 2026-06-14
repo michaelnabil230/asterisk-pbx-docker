@@ -29,3 +29,5 @@ alembic -c voicemail.ini upgrade head
 echo "Migrations completed."
 
 exec /usr/sbin/asterisk -vvvdddf -W -U asterisk -p
+
+rm -rf /usr/src/asterisk-${ASTERISK_VERSION}

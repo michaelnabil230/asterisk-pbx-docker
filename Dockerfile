@@ -73,17 +73,9 @@ RUN menuselect/menuselect \
 
 RUN make
 
-RUN make install
-
-RUN make samples
-
-# Install ast-db-manage globally
-
-RUN ln -sf \
-    /usr/src/asterisk-${ASTERISK_VERSION}/contrib/ast-db-manage/ast-db-manage \
-    /usr/local/bin/ast-db-manage
-
-# Create asterisk user and group
+RUN make install \
+    && make samples \
+    && rm -f /usr/src/asterisk-${ASTERISK_VERSION}.tar.gz
 
 RUN groupadd -r asterisk && useradd -r -g asterisk -d /var/lib/asterisk -s /usr/sbin/nologin asterisk
 
@@ -103,6 +95,8 @@ RUN chown -R asterisk:asterisk  \
     /var/run/asterisk  \
     /var/spool/asterisk  \
     /etc/asterisk 
+
+WORKDIR /etc/asterisk
 
 EXPOSE 5060/udp 5060/tcp 5061/tcp 8088/tcp 8089/tcp 10000-10199/udp
 

@@ -1,7 +1,19 @@
-.PHONY: build certs up down restart logs ps shell asterisk-cli db phpmyadmin-logs
+.PHONY: build rebuild rebuild-no-cache down restart logs ps shell \
+        asterisk-cli db phpmyadmin-logs certs clean clean-all \
+        remove-images reset
 
 build:
 	docker compose build
+
+rebuild:
+	docker compose down
+	docker compose build
+	docker compose up -d
+
+rebuild-no-cache:
+	docker compose down
+	docker compose build --no-cache --pull
+	docker compose up -d
 
 up:
 	docker compose up -d
@@ -38,3 +50,20 @@ db:
 
 phpmyadmin-logs:
 	docker compose logs -f phpmyadmin
+
+remove-images:
+	docker compose down --rmi all
+
+clean:
+	docker compose down --remove-orphans
+	docker image prune -f
+
+clean-all:
+	docker compose down -v --remove-orphans --rmi all
+	docker builder prune -af
+
+reset:
+	docker compose down -v --remove-orphans --rmi all
+	docker builder prune -af
+	docker compose build --no-cache --pull
+	docker compose up -d
