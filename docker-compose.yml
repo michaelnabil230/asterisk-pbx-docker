@@ -1,0 +1,56 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+
+  asterisk:
+    build: .
+    container_name: asterisk
+    restart: unless-stopped
+    depends_on:
+      - mysql
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql/${MYSQL_DATABASE}
+    volumes:
+      - ./configs/extensions.conf:/etc/asterisk/extensions.conf
+      - ./configs/http.conf:/etc/asterisk/http.conf
+      - ./configs/pjsip.conf:/etc/asterisk/pjsip.conf
+      - ./configs/res_odbc.conf:/etc/asterisk/res_odbc.conf
+      - ./configs/extconfig.conf:/etc/asterisk/extconfig.conf
+      - ./configs/sorcery.conf:/etc/asterisk/sorcery.conf
+      - ./configs/odbcinst.ini:/etc/odbcinst.ini
+      - ./configs/odbc.ini:/etc/odbc.ini
+      - ./recordings:/var/spool/asterisk/monitor
+      - ./certs:/etc/asterisk/certs
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "5061:5061/tcp"
+      - "8088:8088/tcp"
+      - "8089:8089/tcp"
+      - "10000-10199:10000-10199/udp"
+
+volumes:
+  mysql_data:
