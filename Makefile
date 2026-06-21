@@ -1,6 +1,6 @@
 .PHONY: build rebuild rebuild-no-cache down restart logs ps shell \
         asterisk-cli db phpmyadmin-logs certs clean clean-all \
-        remove-images reset
+        remove-images reset convert-audio
 
 build:
 	docker compose build
@@ -67,3 +67,10 @@ reset:
 	docker builder prune -af
 	docker compose build --no-cache --pull
 	docker compose up -d
+
+convert-audio:
+	@for f in wildcard audio/*.wav; do \
+		echo "Converting $$f..."; \
+		ffmpeg -y -i "$$f" -ar 8000 -ac 1 -c:a pcm_s16le -f wav "$$f.tmp"; \
+		mv "$$f.tmp" "$$f"; \
+	done

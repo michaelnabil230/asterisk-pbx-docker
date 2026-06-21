@@ -1,10 +1,12 @@
 INSERT INTO ps_auths (id, auth_type, username, password)
 VALUES
+('1000', 'userpass', '1000', 'Password1000'),
 ('1001', 'userpass', '1001', 'Password1001'),
 ('1002', 'userpass', '1002', 'Password1002');
 
 INSERT INTO ps_aors (id, max_contacts, remove_existing)
 VALUES
+('1000', 5, 'yes'),
 ('1001', 5, 'yes'),
 ('1002', 5, 'yes');
 
@@ -27,18 +29,21 @@ INSERT INTO ps_endpoints (
     rewrite_contact,
     force_rport,
     rtp_symmetric,
-    direct_media
+    direct_media,
+    media_use_received_transport,
+    bundle,
+    dtmf_mode
 )
 VALUES
 (
-    '1001',
+    '1000',
     'transport-wss',
-    '1001',
-    '1001',
+    '1000',
+    '1000',
     'from-internal',
     'localhost',
     'all',
-    'opus,ulaw',
+    'ulaw',
     'yes',
     'yes',
     'dtls',
@@ -49,7 +54,34 @@ VALUES
     'yes',
     'yes',
     'yes',
-    'no'
+    'no',
+    'yes',
+    'yes',
+    'rfc4733'
+),
+(
+    '1001',
+    'transport-wss',
+    '1001',
+    '1001',
+    'from-internal',
+    'localhost',
+    'all',
+    'ulaw',
+    'yes',
+    'yes',
+    'dtls',
+    'fingerprint',
+    'actpass',
+    'yes',
+    'yes',
+    'yes',
+    'yes',
+    'yes',
+    'no',
+    'yes',
+    'yes',
+    'rfc4733'
 ),
 (
     '1002',
@@ -59,7 +91,7 @@ VALUES
     'from-internal',
     'localhost',
     'all',
-    'opus,ulaw',
+    'ulaw',
     'yes',
     'yes',
     'dtls',
@@ -70,5 +102,8 @@ VALUES
     'yes',
     'yes',
     'yes',
-    'no'
+    'no',
+    'yes',
+    'yes',
+    'rfc4733'
 );

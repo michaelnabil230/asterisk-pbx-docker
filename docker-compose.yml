@@ -34,6 +34,7 @@ services:
     environment:
       DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql/${MYSQL_DATABASE}
     volumes:
+      - ./configs/ari.conf:/etc/asterisk/ari.conf
       - ./configs/extensions.conf:/etc/asterisk/extensions.conf
       - ./configs/http.conf:/etc/asterisk/http.conf
       - ./configs/pjsip.conf:/etc/asterisk/pjsip.conf
@@ -44,6 +45,7 @@ services:
       - ./configs/odbc.ini:/etc/odbc.ini
       - ./recordings:/var/spool/asterisk/monitor
       - ./certs:/etc/asterisk/certs
+      - ./audio:/var/lib/asterisk/sounds/custom
     ports:
       - "5060:5060/udp"
       - "5060:5060/tcp"

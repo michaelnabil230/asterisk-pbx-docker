@@ -35,27 +35,26 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     default-libmysqlclient-dev \
     python3 \
     python3-pip \
-    python3-venv
-
-RUN rm -rf /var/lib/apt/lists/*
+    python3-venv && \
+    rm -rf /var/lib/apt/lists/*
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
-RUN python3 -m venv /opt/venv
-
-RUN /opt/venv/bin/pip install \
+RUN python3 -m venv /opt/venv && \
+    /opt/venv/bin/pip install --no-cache-dir \
     alembic \
     sqlalchemy \
     pymysql
 
-ENV PATH="/opt/venv/bin:$PATH"
+ENV PATH="/opt/venv/bin:${PATH}"
 
 WORKDIR /usr/src
 
-RUN wget https://downloads.asterisk.org/pub/telephony/asterisk/asterisk-${ASTERISK_VERSION}.tar.gz
-
-RUN tar -xzf asterisk-${ASTERISK_VERSION}.tar.gz
+# Download and extract Asterisk
+RUN wget https://downloads.asterisk.org/pub/telephony/asterisk/releases/asterisk-${ASTERISK_VERSION}.tar.gz && \
+    tar -xzf asterisk-${ASTERISK_VERSION}.tar.gz && \
+    rm asterisk-${ASTERISK_VERSION}.tar.gz
 
 WORKDIR /usr/src/asterisk-${ASTERISK_VERSION}
 
@@ -69,35 +68,47 @@ RUN menuselect/menuselect \
     --enable res_http_websocket \
     --enable res_pjsip \
     --enable res_pjsip_transport_websocket \
+    --enable codec_ulaw \
+    --enable codec_alaw \
+    --enable codec_resample \
     menuselect.makeopts
 
 RUN make
 
-RUN make install \
-    && make samples \
-    && rm -f /usr/src/asterisk-${ASTERISK_VERSION}.tar.gz
+RUN make install && \
+    make samples
 
-RUN groupadd -r asterisk && useradd -r -g asterisk -d /var/lib/asterisk -s /usr/sbin/nologin asterisk
+# Create Asterisk user
+RUN groupadd -r asterisk && \
+    useradd -r -g asterisk \
+    -d /var/lib/asterisk \
+    -s /usr/sbin/nologin \
+    asterisk
 
 # Create required directories
-
 RUN mkdir -p \
     /var/lib/asterisk \
+    /var/lib/asterisk/sounds/custom \
     /var/log/asterisk \
     /var/run/asterisk \
     /var/spool/asterisk
 
-# Set ownership
+COPY audio/ /var/lib/asterisk/sounds/custom/
 
-RUN chown -R asterisk:asterisk  \
-    /var/lib/asterisk  \
-    /var/log/asterisk  \
-    /var/run/asterisk  \
-    /var/spool/asterisk  \
-    /etc/asterisk 
+RUN chown -R asterisk:asterisk \
+    /var/lib/asterisk \
+    /var/log/asterisk \
+    /var/run/asterisk \
+    /var/spool/asterisk \
+    /etc/asterisk
 
 WORKDIR /etc/asterisk
 
-EXPOSE 5060/udp 5060/tcp 5061/tcp 8088/tcp 8089/tcp 10000-10199/udp
+EXPOSE 5060/udp
+EXPOSE 5060/tcp
+EXPOSE 5061/tcp
+EXPOSE 8088/tcp
+EXPOSE 8089/tcp
+EXPOSE 10000-10199/udp
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
